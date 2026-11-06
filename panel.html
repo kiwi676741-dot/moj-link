@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            color: black;
+            padding: 20px;
+            font-size: 14px;
+            font-weight: normal; /* Upewniamy się, że nic nie jest pogrubione */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+            font-weight: normal; /* Tabela też bez pogrubień */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h3>Ostatnie kliknięcia</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>IP / Dostawca</th>
+                <th>Kraj / Miasto</th>
+                <th>Urządzenie</th>
+                <th>Referer</th>
+                <th>User-Agent</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-dane">
+            <tr><td colspan="6">Oczekiwanie na kliknięcia...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        async function pobierzDane() {
+            try {
+                const response = await fetch('/api/dane');
+                const dane = await response.json();
+                const tbody = document.getElementById('tabela-dane');
+
+                if (dane.length === 0) return;
+
+                tbody.innerHTML = '';
+                
+                dane.forEach(klik => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${klik.data}</td>
+                        <td>${klik.ip}<br><span style="color:gray; font-size:12px;">${klik.isp}</span></td>
+                        <td>${klik.kraj}<br><span style="color:gray; font-size:12px;">${klik.miasto}</span></td>
+                        <td>${klik.system}<br>${klik.przegladarka}</td>
+                        <td>${klik.referer}</td>
+                        <td style="font-size: 11px; word-break: break-all;">${klik.userAgent}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Błąd pobierania danych:", error);
+            }
+        }
+
+        // Odświeżanie co 3 sekundy
+        setInterval(pobierzDane, 3000);
+        pobierzDane();
+    </script>
+
+</body>
+</html>
